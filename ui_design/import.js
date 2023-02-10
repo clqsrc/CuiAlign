@@ -133,6 +133,7 @@ function check_import(func)
 //https://jingyan.baidu.com/article/af9f5a2d774f6c43140a45e5.html
 function _loadScript(url, callback) 
 {
+    //try{  //2023 add 文件可能不存在  //HTMLScriptElement
 	var script = document.createElement("script");
 	script.type = "text/javascript";
 	if (typeof(callback) != "undefined") {
@@ -148,8 +149,48 @@ function _loadScript(url, callback)
 				callback(url);
 			};
 		}
+
+        //--------------------------------------------------------
+        //2023 add 文件可能不存在 //能否检测出来
+        //上面的代码中 onreadystatechange 可能不存在，所以有 script.onload 的相关事件处理
+
+        //这个实测没反应
+        script.onabort = function() {
+            callback(url);
+        };
+
+        //pc chrome 实测在文件不存在时会触发，但未测试手机浏览器的兼容情况
+        //msdn 上有一个处理的示例 https://developer.mozilla.org/zh-CN/docs/Web/API/HTMLScriptElement
+        script.onerror = function(e) {
+
+            AddLog("Error! at [script.onerror] The script " + url + " is not accessible.")
+
+            callback(url);
+
+            //throw new URIError("The script " + oError.target.src + " is not accessible."); //msdn 的示例处理方式
+        };
+
+        //--------------------------------------------------------
+
 	};
 	script.src = url;
 	document.body.appendChild(script);
+
+    // }catch(e){
+    //     AddLog("---------------------------------------------------------------");
+    //     AddLog("error." + e);
+    //     AddLog("[e.stack]错误堆栈.：");
+    //     AddLog(e.stack);
+    //     AddLog("---------------------------------------------------------------");
+        
+    //     var error_str = "---------------------------------------------------------------" + "<br />";
+    //     error_str += "error." + e + "<br />";
+    //     error_str += "----------------" + "<br />";
+    //     error_str += e.stack + "<br />";
+    //     _alert(error_str);
+    //     throw e;
+        
+    // }//try
+
 }//
 	
